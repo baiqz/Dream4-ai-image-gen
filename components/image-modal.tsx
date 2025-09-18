@@ -44,7 +44,9 @@ export function ImageModal({ image, isOpen, onClose, onDownload, onShare, onRetr
               <span className="text-sm text-slate-400">•</span>
               <span className="text-sm text-pink-500 dark:text-cyan-400">{image.quality}</span>
               <span className="text-sm text-slate-400">•</span>
-              <span className="text-sm text-slate-500 dark:text-slate-400">{image.createdAt.toLocaleDateString()}</span>
+              <span className="text-sm text-slate-500 dark:text-slate-400">
+                {new Date(image.createdAt).toLocaleDateString()}
+              </span>
             </div>
           </div>
           <Button
