@@ -144,59 +144,79 @@ export class SeedreamAPI {
     if (!image) throw new Error("Image not found")
 
     try {
-      const response = await fetch(image.url, {
-        mode: "cors",
-      })
-      const blob = await response.blob()
+      console.log("[v0] Starting download for image:", image.url)
 
-      const canvas = document.createElement("canvas")
-      const ctx = canvas.getContext("2d")
-      const img = new Image()
-
-      img.crossOrigin = "anonymous"
-
-      await new Promise((resolve, reject) => {
-        img.onload = () => {
-          canvas.width = img.width
-          canvas.height = img.height
-          ctx?.drawImage(img, 0, 0)
-          resolve(void 0)
-        }
-        img.onerror = reject
-        img.src = URL.createObjectURL(blob)
-      })
-
-      // Convert canvas to PNG blob
-      const pngBlob = await new Promise<Blob>((resolve) => {
-        canvas.toBlob(
-          (blob) => {
-            resolve(blob!)
+      // Try direct download first (for same-origin or CORS-enabled images)
+      try {
+        const response = await fetch(image.url, {
+          mode: "cors",
+          headers: {
+            Accept: "image/*",
           },
-          "image/png",
-          1.0,
-        )
-      })
+        })
 
-      const url = window.URL.createObjectURL(pngBlob)
-      const link = document.createElement("a")
-      link.href = url
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`)
+        }
 
-      const cleanPrompt = image.prompt
-        .replace(/[^a-zA-Z0-9\s]/g, "")
-        .substring(0, 30)
-        .trim()
-        .replace(/\s+/g, "-")
-      const timestamp = new Date().toISOString().slice(0, 10)
-      link.download = `seedream-${cleanPrompt}-${timestamp}.png`
+        const blob = await response.blob()
+        console.log("[v0] Successfully fetched image blob, size:", blob.size)
 
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+        // Create download link
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement("a")
+        link.href = url
 
-      window.URL.revokeObjectURL(url)
+        const cleanPrompt = image.prompt
+          .replace(/[^a-zA-Z0-9\s]/g, "")
+          .substring(0, 30)
+          .trim()
+          .replace(/\s+/g, "-")
+        const timestamp = new Date().toISOString().slice(0, 10)
+        link.download = `seedream-${cleanPrompt}-${timestamp}.png`
+
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+
+        window.URL.revokeObjectURL(url)
+        console.log("[v0] Download completed successfully")
+      } catch (fetchError) {
+        console.log("[v0] Direct fetch failed, trying alternative method:", fetchError)
+
+        // Fallback: Open image in new tab for user to save manually
+        const link = document.createElement("a")
+        link.href = image.url
+        link.target = "_blank"
+        link.download = `seedream-image-${Date.now()}.png`
+
+        // Try to trigger download attribute
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+
+        // Show user notification
+        const notification = document.createElement("div")
+        notification.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span>Image opened in new tab. Right-click and "Save As" to download.</span>
+          </div>
+        `
+        notification.className =
+          "fixed top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 max-w-sm"
+        document.body.appendChild(notification)
+
+        setTimeout(() => {
+          if (document.body.contains(notification)) {
+            document.body.removeChild(notification)
+          }
+        }, 5000)
+
+        console.log("[v0] Fallback download method used")
+      }
     } catch (error) {
-      console.error("Download failed:", error)
-      window.open(image.url, "_blank")
+      console.error("[v0] Download failed:", error)
+      throw new Error("Download failed: " + (error instanceof Error ? error.message : "Unknown error"))
     }
   }
 
