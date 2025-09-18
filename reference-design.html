@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Seedream 4.0 - AI Image Generation</title>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Space+Grotesk:wght@400;500;700" onload="this.rel='stylesheet'" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                DEFAULT: "#FF4081", // Vibrant Pink
+                light: "#FF80AB",
+              },
+              secondary: "#7C4DFF", // Deep Purple
+              accent: {
+                DEFAULT: "#00E5FF", // Cyan
+                dark: "#00B8D4",
+              },
+              "background-light": "#F5F5F5", // Lighter Gray
+              "background-dark": "#1A1A2E", // Deep Blue-Purple
+              "text-light": "#1A1A2E",
+              "text-dark": "#FFFFFF",
+            },
+            fontFamily: {
+              display: ["Space Grotesk"],
+            },
+            borderRadius: {
+              DEFAULT: "0.5rem",
+              lg: "0.75rem",
+              xl: "1rem",
+              full: "9999px"
+            },
+            boxShadow: {
+                'cartoon-light': '4px 4px 0px #1A1A2E',
+                'cartoon-dark': '4px 4px 0px #00E5FF',
+            }
+          },
+        },
+      };
+      function toggleTheme() {
+        document.documentElement.classList.toggle('dark');
+      }
+      function toggleLanguage() {
+        const langToggle = document.getElementById('language-toggle');
+        const isEnglish = langToggle.querySelector('span:first-child').classList.contains('text-primary-dark');
+        if (isEnglish) {
+          langToggle.querySelector('span:first-child').classList.remove('text-primary-dark', 'font-bold');
+          langToggle.querySelector('span:first-child').classList.add('text-gray-500', 'dark:text-gray-400');
+          langToggle.querySelector('span:last-child').classList.add('text-primary-dark', 'font-bold');
+          langToggle.querySelector('span:last-child').classList.remove('text-gray-500', 'dark:text-gray-400');
+          langToggle.querySelector('div').style.transform = 'translateX(100%)';
+        } else {
+          langToggle.querySelector('span:last-child').classList.remove('text-primary-dark', 'font-bold');
+          langToggle.querySelector('span:last-child').classList.add('text-gray-500', 'dark:text-gray-400');
+          langToggle.querySelector('span:first-child').classList.add('text-primary-dark', 'font-bold');
+          langToggle.querySelector('span:first-child').classList.remove('text-gray-500', 'dark:text-gray-400');
+          langToggle.querySelector('div').style.transform = 'translateX(0%)';
+        }
+      }
+    </script>
+<style>
+      .glow-effect {
+        box-shadow: 0 0 8px theme('colors.accent.DEFAULT'), 0 0 16px theme('colors.accent.DEFAULT');
+        transition: box-shadow 0.3s ease-in-out;
+      }
+      .group:hover .glow-effect, .glow-effect:hover {
+        box-shadow: 0 0 12px theme('colors.accent.DEFAULT'), 0 0 24px theme('colors.accent.DEFAULT'), 0 0 36px theme('colors.accent.DEFAULT');
+      }
+      .active-chip {
+        background-color: theme('colors.primary.DEFAULT');
+        color: theme('colors.text-dark');
+        box-shadow: 2px 2px 0px theme('colors.text-light');
+      }
+      .dark .active-chip {
+        background-color: theme('colors.accent.DEFAULT');
+        color: theme('colors.text-light');
+        box-shadow: 2px 2px 0px theme('colors.text-dark');
+      }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark">
+<div class="relative min-h-screen w-full">
+<div class="absolute inset-0 bg-grid-pattern opacity-5 dark:opacity-5"></div>
+<div class="relative flex flex-col min-h-screen">
+<header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm border-b-4 border-text-light dark:border-accent">
+<div class="container mx-auto px-6 py-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-4">
+<svg class="text-primary h-10 w-10" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path class="text-secondary" d="M39.5563 34.1455V13.8546C39.5563 15.708 36.8773 17.3437 32.7927 18.3189C30.2914 18.916 27.263 19.2655 24 19.2655C20.737 19.2655 17.7086 18.916 15.2073 18.3189C11.1227 17.3437 8.44365 15.708 8.44365 13.8546V34.1455C8.44365 35.9988 11.1227 37.6346 15.2073 38.6098C17.7086 39.2069 20.737 39.5564 24 39.5564C27.263 39.5564 30.2914 39.2069 32.7927 38.6098C36.8773 37.6346 39.5563 35.9988 39.5563 34.1455Z"></path>
+<path class="text-primary" clip-rule="evenodd" d="M10.4485 13.8519C10.4749 13.9271 10.6203 14.246 11.379 14.7361C12.298 15.3298 13.7492 15.9145 15.6717 16.3735C18.0007 16.9296 20.8712 17.2655 24 17.2655C27.1288 17.2655 29.9993 16.9296 32.3283 16.3735C34.2508 15.9145 35.702 15.3298 36.621 14.7361C37.3796 14.246 37.5251 13.9271 37.5515 13.8519C37.5287 13.7876 37.4333 13.5973 37.0635 13.2931C36.5266 12.8516 35.6288 12.3647 34.343 11.9175C31.79 11.0295 28.1333 10.4437 24 10.4437C19.8667 10.4437 16.2099 11.0295 13.657 11.9175C12.3712 12.3647 11.4734 12.8516 10.9365 13.2931C10.5667 13.5973 10.4713 13.7876 10.4485 13.8519ZM37.5563 18.7877C36.3176 19.3925 34.8502 19.8839 33.2571 20.2642C30.5836 20.9025 27.3973 21.2655 24 21.2655C20.6027 21.2655 17.4164 20.9025 14.7429 20.2642C13.1498 19.8839 11.6824 19.3925 10.4436 18.7877V34.1275C10.4515 34.1545 10.5427 34.4867 11.379 35.027C12.298 35.6207 13.7492 36.2054 15.6717 36.6644C18.0007 37.2205 20.8712 37.5564 24 37.5564C27.1288 37.5564 29.9993 37.2205 32.3283 36.6644C34.2508 36.2054 35.702 35.6207 36.621 35.027C37.4573 34.4867 37.5485 34.1546 37.5563 34.1275V18.7877ZM41.5563 13.8546V34.1455C41.5563 36.1078 40.158 37.5042 38.7915 38.3869C37.3498 39.3182 35.4192 40.0389 33.2571 40.5551C30.5836 41.1934 27.3973 41.5564 24 41.5564C20.6027 41.5564 17.4164 41.1934 14.7429 40.5551C12.5808 40.0389 10.6502 39.3182 9.20848 38.3869C7.84205 37.5042 6.44365 36.1078 6.44365 34.1455L6.44365 13.8546C6.44365 12.2684 7.37223 11.0454 8.39581 10.2036C9.43325 9.3505 10.8137 8.67141 12.343 8.13948C15.4203 7.06909 19.5418 6.44366 24 6.44366C28.4582 6.44366 32.5797 7.06909 35.657 8.13948C37.1863 8.67141 38.5667 9.3505 39.6042 10.2036C40.6278 11.0454 41.5563 12.2684 41.5563 13.8546Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+<h1 class="text-xl font-bold text-text-light dark:text-text-dark">Seedream 4.0</h1>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-sm font-bold text-text-light/70 dark:text-text-dark/70 hover:text-primary dark:hover:text-accent transition-colors" href="#">Home</a>
+<a class="text-sm font-bold text-text-light/70 dark:text-text-dark/70 hover:text-primary dark:hover:text-accent transition-colors" href="#">Explore</a>
+<a class="text-sm font-bold text-text-light/70 dark:text-text-dark/70 hover:text-primary dark:hover:text-accent transition-colors" href="#">Community</a>
+<a class="text-sm font-bold text-text-light/70 dark:text-text-dark/70 hover:text-primary dark:hover:text-accent transition-colors" href="#">About</a>
+</nav>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 bg-secondary/10 dark:bg-accent/20 p-1 rounded-full border-2 border-text-light dark:border-accent">
+<span class="text-sm font-bold text-primary dark:text-accent px-3">EN</span>
+<button class="relative w-12 h-6 rounded-full bg-gray-300 dark:bg-background-dark" id="language-toggle" onclick="toggleLanguage()">
+<div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white dark:bg-accent rounded-full transition-transform duration-300 ease-in-out"></div>
+</button>
+<span class="text-sm text-gray-500 dark:text-gray-400 px-3">中文</span>
+</div>
+<button class="relative rounded-full p-2 text-text-light dark:text-accent hover:bg-primary/10 dark:hover:bg-accent/20 transition-colors" onclick="toggleTheme()">
+<span class="material-symbols-outlined dark:hidden">light_mode</span>
+<span class="material-symbols-outlined hidden dark:inline">dark_mode</span>
+</button>
+<button class="relative rounded-full p-2 text-text-light dark:text-accent hover:bg-primary/10 dark:hover:bg-accent/20 transition-colors">
+<svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216ZM48,184c7.7-13.24,16-43.92,16-80a64,64,0,1,1,128,0c0,36.05,8.28,66.73,16,80Z"></path>
+</svg>
+<span class="absolute top-1 right-1 flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary dark:bg-accent opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-primary dark:bg-accent"></span>
+</span>
+</button>
+<div class="w-12 h-12 rounded-full bg-cover bg-center border-4 border-secondary dark:border-accent shadow-cartoon-light dark:shadow-cartoon-dark" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCbeMCPWe6aYxi08MTWacrH8xX9ys3yPG7s2fJ-gHPkmezAjEyBwg15wEYXEqgLGTt_nUUFo0Vf9e_XQiXBCseMQgfS7rGQgj4ffCsoxB-i7ofBqXbAzuXTVXlAf0coumVZ20T_MpWyEEchao7EseHbwPA-gq6EjSNSzkaD7sYapa3WnVGGJpsGNVnq3E61Xy9gdVp4LdwZzpfrFnqiEi1USutXQt3gBFk1I8CJ2cEUcCYewS5MtqUWCWB-rwCUqwEY6thNyg6lrgY");'></div>
+</div>
+</div>
+</div>
+</header>
+<main class="container mx-auto px-6 py-10 flex-grow">
+<div class="max-w-3xl mx-auto">
+<div class="text-center mb-12">
+<h2 class="text-4xl md:text-5xl font-bold text-text-light dark:text-text-dark mb-4">Unleash Your Imagination</h2>
+<p class="text-lg text-text-light/80 dark:text-text-dark/80">Describe anything you can dream of, and let our AI bring it to life.</p>
+</div>
+<div class="relative mb-8">
+<input class="form-input w-full pl-4 pr-12 py-4 rounded-lg bg-background-light dark:bg-background-dark border-4 border-text-light dark:border-accent focus:ring-4 focus:ring-primary dark:focus:ring-accent placeholder-gray-500 dark:placeholder-gray-400 text-lg font-bold shadow-cartoon-light dark:shadow-cartoon-dark focus:shadow-none transition-shadow" placeholder="A vibrant cartoon world with talking animals..."/>
+</div>
+<div class="space-y-8">
+<div>
+<h3 class="text-xl font-bold mb-4 text-text-light dark:text-accent">Style</h3>
+<div class="flex flex-wrap gap-3">
+<button class="px-4 py-2 rounded-lg text-sm font-bold border-2 border-text-light dark:border-text-dark bg-secondary/10 text-text-light dark:text-text-dark hover:bg-primary/80 dark:hover:bg-accent/80 hover:text-white dark:hover:text-text-light transition-all duration-200 transform hover:-translate-y-1">Cinematic</button>
+<button class="px-4 py-2 rounded-lg text-sm font-bold border-2 border-text-light dark:border-text-dark bg-secondary/10 text-text-light dark:text-text-dark hover:bg-primary/80 dark:hover:bg-accent/80 hover:text-white dark:hover:text-text-light transition-all duration-200 transform hover:-translate-y-1">Photography</button>
+<button class="px-4 py-2 rounded-lg text-sm font-bold border-2 border-text-light dark:border-text-dark bg-secondary/10 text-text-light dark:text-text-dark hover:bg-primary/80 dark:hover:bg-accent/80 hover:text-white dark:hover:text-text-light transition-all duration-200 transform hover:-translate-y-1">Anime</button>
+<button class="px-4 py-2 rounded-lg text-sm font-bold border-2 border-text-light dark:border-text-dark bg-secondary/10 text-text-light dark:text-text-dark hover:bg-primary/80 dark:hover:bg-accent/80 hover:text-white dark:hover:text-text-light transition-all duration-200 transform hover:-translate-y-1 active-chip">Cartoon</button>
+<button class="px-4 py-2 rounded-lg text-sm font-bold border-2 border-text-light dark:border-text-dark bg-secondary/10 text-text-light dark:text-text-dark hover:bg-primary/80 dark:hover:bg-accent/80 hover:text-white dark:hover:text-text-light transition-all duration-200 transform hover:-translate-y-1">Comic Book</button>
+<button class="px-4 py-2 rounded-lg text-sm font-bold border-2 border-text-light dark:border-text-dark bg-secondary/10 text-text-light dark:text-text-dark hover:bg-primary/80 dark:hover:bg-accent/80 hover:text-white dark:hover:text-text-light transition-all duration-200 transform hover:-translate-y-1">Oil Painting</button>
+</div>
+</div>
+<div>
+<h3 class="text-xl font-bold mb-4 text-text-light dark:text-accent">Dimensions</h3>
+<div class="flex flex-wrap gap-3">
+<button class="px-4 py-2 rounded-lg text-sm font-bold border-2 border-text-light dark:border-text-dark bg-secondary/10 text-text-light dark:text-text-dark hover:bg-primary/80 dark:hover:bg-accent/80 hover:text-white dark:hover:text-text-light transition-all duration-200 transform hover:-translate-y-1 active-chip">Square</button>
+<button class="px-4 py-2 rounded-lg text-sm font-bold border-2 border-text-light dark:border-text-dark bg-secondary/10 text-text-light dark:text-text-dark hover:bg-primary/80 dark:hover:bg-accent/80 hover:text-white dark:hover:text-text-light transition-all duration-200 transform hover:-translate-y-1">Square HD</button>
+<button class="px-4 py-2 rounded-lg text-sm font-bold border-2 border-text-light dark:border-text-dark bg-secondary/10 text-text-light dark:text-text-dark hover:bg-primary/80 dark:hover:bg-accent/80 hover:text-white dark:hover:text-text-light transition-all duration-200 transform hover:-translate-y-1">Portrait 3:4</button>
+<button class="px-4 py-2 rounded-lg text-sm font-bold border-2 border-text-light dark:border-text-dark bg-secondary/10 text-text-light dark:text-text-dark hover:bg-primary/80 dark:hover:bg-accent/80 hover:text-white dark:hover:text-text-light transition-all duration-200 transform hover:-translate-y-1">Portrait 9:16</button>
+<button class="px-4 py-2 rounded-lg text-sm font-bold border-2 border-text-light dark:border-text-dark bg-secondary/10 text-text-light dark:text-text-dark hover:bg-primary/80 dark:hover:bg-accent/80 hover:text-white dark:hover:text-text-light transition-all duration-200 transform hover:-translate-y-1">Landscape 4:3</button>
+<button class="px-4 py-2 rounded-lg text-sm font-bold border-2 border-text-light dark:border-text-dark bg-secondary/10 text-text-light dark:text-text-dark hover:bg-primary/80 dark:hover:bg-accent/80 hover:text-white dark:hover:text-text-light transition-all duration-200 transform hover:-translate-y-1">Landscape 9:16</button>
+</div>
+</div>
+<div>
+<h3 class="text-xl font-bold mb-4 text-text-light dark:text-accent">Quality</h3>
+<div class="flex flex-wrap gap-3">
+<button class="px-4 py-2 rounded-lg text-sm font-bold border-2 border-text-light dark:border-text-dark bg-secondary/10 text-text-light dark:text-text-dark hover:bg-primary/80 dark:hover:bg-accent/80 hover:text-white dark:hover:text-text-light transition-all duration-200 transform hover:-translate-y-1">1K</button>
+<button class="px-4 py-2 rounded-lg text-sm font-bold border-2 border-text-light dark:border-text-dark bg-secondary/10 text-text-light dark:text-text-dark hover:bg-primary/80 dark:hover:bg-accent/80 hover:text-white dark:hover:text-text-light transition-all duration-200 transform hover:-translate-y-1 active-chip">2K</button>
+<button class="px-4 py-2 rounded-lg text-sm font-bold border-2 border-text-light dark:border-text-dark bg-secondary/10 text-text-light dark:text-text-dark hover:bg-primary/80 dark:hover:bg-accent/80 hover:text-white dark:hover:text-text-light transition-all duration-200 transform hover:-translate-y-1">4K</button>
+</div>
+</div>
+<div class="text-center pt-6">
+<button class="w-full md:w-auto group bg-primary dark:bg-accent text-white dark:text-text-light font-bold text-xl px-12 py-4 rounded-xl border-4 border-text-light dark:border-text-dark shadow-cartoon-light dark:shadow-cartoon-dark hover:shadow-none transition-all duration-200 transform hover:-translate-y-1 active:translate-y-0">
+                  Generate
+                </button>
+</div>
+</div>
+<div class="mt-16">
+<h3 class="text-2xl font-bold mb-6 text-text-light dark:text-text-dark text-center">Your Creations</h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="group relative aspect-square overflow-hidden rounded-xl border-4 border-text-light dark:border-accent shadow-cartoon-light dark:shadow-cartoon-dark">
+<div class="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDuRcSm8Q9MaAWVCmUudOD4HWACsIwcQRHCkprtAINffUlX6iGptVhwhCSVrCbGFWkCxAFqwqz7gR63JFRPfdZNB6BXfQ9ethBl25Q7nfOzXY2dL2yGRtDl5po8gWoU0Jcd9kgXPTjzrP4dL6rq3MXURM69IpyVi_V6obuDDQo1bJlJDRjk99CW_fXnuE6M1RoIe4xrOggtSmVMWL3ITiJdJaM4U-LHCRffx3IlvFwTaUFtnTxBcCbOPCdm9CrirvmXFBzlPNEs68Q");'></div>
+<div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
+<button class="p-3 rounded-full bg-accent/80 text-text-light backdrop-blur-sm hover:bg-accent transition-colors"><svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M216,144v64a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H200V144a8,8,0,0,1,16,0Zm-85.66,5.66a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L85.66,98.34a8,8,0,0,0-11.32,11.32Z"></path></svg></button>
+<button class="p-3 rounded-full bg-accent/80 text-text-light backdrop-blur-sm hover:bg-accent transition-colors"><svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M240,128a8,8,0,0,1-8,8H200.27l-26.63,26.64a8,8,0,0,1-11.32-11.32L173.66,136H82.34l11.31,11.32a8,8,0,0,1-11.32,11.32L55.73,132.05a8,8,0,0,1,0-11.32L82.34,94.05a8,8,0,0,1,11.32,11.32L82.34,116h91.32L162.34,104.69a8,8,0,0,1,11.32-11.32L200.27,120H232A8,8,0,0,1,240,128Z"></path></svg></button>
+</div>
+</div>
+<div class="group relative aspect-square overflow-hidden rounded-xl border-4 border-text-light dark:border-accent shadow-cartoon-light dark:shadow-cartoon-dark">
+<div class="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBQ5n1245Vw8KGERPeENmeGx4YDm-RnXat2InHYIEFjRKpvbBpfNMIJ_M8Gq5Xx6LVmtHTyQZ1D0Y--v7QXfDnfesVRXBIKnxfEv7Z48xyY7L7LhGtGtEjfJab5NAJeLJQ5_Rog5ahMuyyqmZfp2FrC8ZUX3OWSGGlA5KIAL5toS_MQYqFRYo5mB47i68lwvF1xiPBsJ50TO271iQhDtGkibkWQf40mICijLWOUNwaRQtH4iICXkly5mQoqj4gnmDGnv7JWYaprEL0");'></div>
+<div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
+<button class="p-3 rounded-full bg-accent/80 text-text-light backdrop-blur-sm hover:bg-accent transition-colors"><svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M216,144v64a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H200V144a8,8,0,0,1,16,0Zm-85.66,5.66a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L85.66,98.34a8,8,0,0,0-11.32,11.32Z"></path></svg></button>
+<button class="p-3 rounded-full bg-accent/80 text-text-light backdrop-blur-sm hover:bg-accent transition-colors"><svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M240,128a8,8,0,0,1-8,8H200.27l-26.63,26.64a8,8,0,0,1-11.32-11.32L173.66,136H82.34l11.31,11.32a8,8,0,0,1-11.32,11.32L55.73,132.05a8,8,0,0,1,0-11.32L82.34,94.05a8,8,0,0,1,11.32,11.32L82.34,116h91.32L162.34,104.69a8,8,0,0,1,11.32-11.32L200.27,120H232A8,8,0,0,1,240,128Z"></path></svg></button>
+</div>
+</div>
+<div class="group relative aspect-square overflow-hidden rounded-xl border-4 border-text-light dark:border-accent shadow-cartoon-light dark:shadow-cartoon-dark">
+<div class="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBkYtJcMP5eEGY8Jkd3QWW-UlRhH4MYfbKsRmHclgh4Ea4ttu03ubPStQXXrVJ_Mj8vizJrt-Y3XhlmYXVYlVSix7cZNw1Ie61aN9tByTNTcSiSQy3_HVTx5RD15pib1G73Wi-uwnsz_0ryL0UyTg7yrW4qS1H7HUouUmMWfyQJBw8bM2vKLN-I6TKk24s3Il3-QxdRgJNZlGx8X0M8hvVqAbyUgagQ-wlVGD7WksHYcldMoqArULTPnjhrclOjQZaBw79jcqH2oB4");'></div>
+<div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
+<button class="p-3 rounded-full bg-accent/80 text-text-light backdrop-blur-sm hover:bg-accent transition-colors"><svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M216,144v64a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H200V144a8,8,0,0,1,16,0Zm-85.66,5.66a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L85.66,98.34a8,8,0,0,0-11.32,11.32Z"></path></svg></button>
+<button class="p-3 rounded-full bg-accent/80 text-text-light backdrop-blur-sm hover:bg-accent transition-colors"><svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M240,128a8,8,0,0,1-8,8H200.27l-26.63,26.64a8,8,0,0,1-11.32-11.32L173.66,136H82.34l11.31,11.32a8,8,0,0,1-11.32,11.32L55.73,132.05a8,8,0,0,1,0-11.32L82.34,94.05a8,8,0,0,1,11.32,11.32L82.34,116h91.32L162.34,104.69a8,8,0,0,1,11.32-11.32L200.27,120H232A8,8,0,0,1,240,128Z"></path></svg></button>
+</div>
+</div>
+<div class="group relative aspect-square overflow-hidden rounded-xl border-4 border-text-light dark:border-accent shadow-cartoon-light dark:shadow-cartoon-dark">
+<div class="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBun1R2yq-Nq8jARq-MMzLTPwGLKKblj7KhWxxEBI2GkSHiGeNE00ZMHFTCV3I4oOIxFy0ciGMCvBuxIhTEucuGGPxBs8UGbM8FZx07Mh4h1G-PUtLL3c2YF_sDBXRJpVU5n0cdYYjztxGW28zjjEF138cq6Z9rzLXFMgdfjtr_-S2xnsIJowtxZdKHNModsrPjp0DXjXR1a0J4K3hh6QEjkK5H3zseNxarzCaGaclbyQGkshvTLPEu8YlfVD9waGitz-R6OYjZ75E");'></div>
+<div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
+<button class="p-3 rounded-full bg-accent/80 text-text-light backdrop-blur-sm hover:bg-accent transition-colors"><svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M216,144v64a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H200V144a8,8,0,0,1,16,0Zm-85.66,5.66a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L85.66,98.34a8,8,0,0,0-11.32,11.32Z"></path></svg></button>
+<button class="p-3 rounded-full bg-accent/80 text-text-light backdrop-blur-sm hover:bg-accent transition-colors"><svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M240,128a8,8,0,0,1-8,8H200.27l-26.63,26.64a8,8,0,0,1-11.32-11.32L173.66,136H82.34l11.31,11.32a8,8,0,0,1-11.32,11.32L55.73,132.05a8,8,0,0,1,0-11.32L82.34,94.05a8,8,0,0,1,11.32,11.32L82.34,116h91.32L162.34,104.69a8,8,0,0,1,11.32-11.32L200.27,120H232A8,8,0,0,1,240,128Z"></path></svg></button>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-center mt-8">
+<nav class="flex items-center space-x-2">
+<a class="flex items-center justify-center h-10 w-10 rounded-full text-text-light/70 dark:text-text-dark/70 hover:bg-primary/20 dark:hover:bg-accent/20 transition-colors" href="#">
+<svg fill="currentColor" height="18" viewBox="0 0 256 256" width="18" xmlns="http://www.w3.org/2000/svg"><path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path></svg>
+</a>
+<a class="flex items-center justify-center h-10 w-10 rounded-full text-sm font-bold bg-primary dark:bg-accent text-white dark:text-text-light border-2 border-text-light dark:border-text-dark" href="#">1</a>
+<a class="flex items-center justify-center h-10 w-10 rounded-full text-sm font-medium text-text-light/70 dark:text-text-dark/70 hover:bg-primary/20 dark:hover:bg-accent/20 transition-colors" href="#">2</a>
+<a class="flex items-center justify-center h-10 w-10 rounded-full text-sm font-medium text-text-light/70 dark:text-text-dark/70 hover:bg-primary/20 dark:hover:bg-accent/20 transition-colors" href="#">3</a>
+<span class="text-text-light/70 dark:text-text-dark/70">...</span>
+<a class="flex items-center justify-center h-10 w-10 rounded-full text-sm font-medium text-text-light/70 dark:text-text-dark/70 hover:bg-primary/20 dark:hover:bg-accent/20 transition-colors" href="#">10</a>
+<a class="flex items-center justify-center h-10 w-10 rounded-full text-text-light/70 dark:text-text-dark/70 hover:bg-primary/20 dark:hover:bg-accent/20 transition-colors" href="#">
+<svg fill="currentColor" height="18" viewBox="0 0 256 256" width="18" xmlns="http://www.w3.org/2000/svg"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path></svg>
+</a>
+</nav>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>
